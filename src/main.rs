@@ -5,7 +5,7 @@ fn main() {
 
     loop {
         if let Ok(input) = input_system.get_input() {
-            println!("{input}");
+            println!("Received: {:?}", input);
             break;
         }
         println!("oui");

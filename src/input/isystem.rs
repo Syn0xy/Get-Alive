@@ -33,12 +33,19 @@ impl InputSystem {
 
 fn spawn_stdin_channel() -> Receiver<InputKey> {
     let (tx, rx) = mpsc::channel::<InputKey>();
+
     thread::spawn(move || {
-        loop {
-            let mut buffer = String::new();
-            io::stdin().read_line(&mut buffer).unwrap();
-            // tx.send(buffer).unwrap();
-            tx.send(InputKey::A).unwrap();
+        let mut string_buffer = String::default();
+
+        while io::stdin().read_line(&mut string_buffer).is_ok() {
+            if let Some(first_char) = string_buffer.chars().next() {
+                match InputKey::from_char(&first_char) {
+                    Ok(input_key) => tx.send(input_key).unwrap(),
+                    Err(_) => println!("Pas bon: {:?}", first_char),
+                }
+            }
+
+            string_buffer.clear();
         }
     });
     rx

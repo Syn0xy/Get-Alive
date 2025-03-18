@@ -1,3 +1,5 @@
+use super::InputError;
+
 #[derive(Debug)]
 pub enum InputKey {
     A,
@@ -26,4 +28,14 @@ pub enum InputKey {
     X,
     Y,
     Z,
+}
+
+impl InputKey {
+    pub fn from_char(value: &char) -> Result<InputKey, InputError> {
+        match value.to_ascii_uppercase() {
+            'A' => Ok(Self::A),
+            'B' => Ok(Self::B),
+            _ => Err(InputError::InvalidInput(value.to_string())),
+        }
+    }
 }

@@ -31,7 +31,7 @@ pub enum InputKey {
 }
 
 impl InputKey {
-    pub fn from_char(value: &char) -> Result<InputKey, InputError> {
+    pub fn from_char(value: char) -> Result<InputKey, InputError> {
         match value.to_ascii_uppercase() {
             'A' => Ok(Self::A),
             'B' => Ok(Self::B),

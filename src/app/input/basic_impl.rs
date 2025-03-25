@@ -1,7 +1,6 @@
 use std::io;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
-use std::sync::mpsc::TryRecvError;
 use std::thread;
 
 use super::InputError;
@@ -22,11 +21,9 @@ impl Default for BasicInputSystem {
 
 impl InputSystem for BasicInputSystem {
     fn get_input(&self) -> Result<InputKey, InputError> {
-        match self.stdin_channel.try_recv() {
-            Ok(character) => InputKey::from_char(&character),
-            Err(TryRecvError::Empty) => Err(InputError::NoInput),
-            Err(TryRecvError::Disconnected) => Err(InputError::NoInput),
-        }
+        self.stdin_channel
+            .try_recv()
+            .map_or(Err(InputError::NoInput), InputKey::from_char)
     }
 }
 

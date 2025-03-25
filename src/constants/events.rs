@@ -1,0 +1,1 @@
+pub const DEFAULT_TICKRATE: u32 = 100;

@@ -3,10 +3,11 @@ use std::time::Duration;
 use super::DisplayEvent;
 
 const CARRIAGE_RETURN: char = '\n';
-const HEIGHT: u32 = 5;
-const WIDTH: u32 = HEIGHT * 4;
+const HEIGHT: u32 = 10;
+const WIDTH: u32 = HEIGHT * 2;
 
-pub fn handle_event(event: &DisplayEvent) {
+pub fn handle_render(event: &DisplayEvent) {
+    println!("oui");
     match event {
         DisplayEvent::RedrawRequested { elapsed_time } => render(elapsed_time),
     }
@@ -15,7 +16,6 @@ pub fn handle_event(event: &DisplayEvent) {
 fn render(elapsed_time: &Duration) {
     let mut string_buffer = String::new();
 
-    string_buffer.push_str("-----------------");
     string_buffer.push(CARRIAGE_RETURN);
 
     for _ in 0..HEIGHT {

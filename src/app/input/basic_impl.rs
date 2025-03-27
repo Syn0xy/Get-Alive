@@ -28,18 +28,16 @@ impl InputSystem for BasicInputSystem {
 }
 
 fn spawn_stdin_channel() -> Receiver<char> {
+    let mut string_buffer = String::default();
     let (tx, rx) = mpsc::channel::<char>();
 
     thread::spawn(move || {
-        let mut string_buffer = String::default();
-
         while io::stdin().read_line(&mut string_buffer).is_ok() {
             if let Some(first_char) = string_buffer.chars().next() {
                 tx.send(first_char).unwrap()
             }
-
-            string_buffer.clear();
         }
     });
+
     rx
 }

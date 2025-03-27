@@ -2,63 +2,14 @@ pub mod app;
 pub mod constants;
 pub mod event;
 
-use std::process;
-
-use app::{
-    input::{InputEvent, InputKey},
-    main::MainEvent,
-    render::handle_event,
-};
-use event::{BasicEventLoop, Dispatcher, EventLoop};
+use app::{AppState, input::BasicInputSystem, main::BasicEntityManager};
+use event::{BasicEventLoop, EventLoop, dispatcher::BasicDispatcher};
 
 fn main() {
-    let mut event_loop = BasicEventLoop::default();
+    let dispatcher = BasicDispatcher::default();
+    let entity_manager = BasicEntityManager::default();
+    let input_system = BasicInputSystem::default();
+    let app = AppState::new(entity_manager, Box::new(input_system));
 
-    event_loop.subscribe(handle_event);
-    event_loop.subscribe(input);
-    event_loop.subscribe(exit);
-    event_loop.run();
+    BasicEventLoop::new(dispatcher, app).run();
 }
-
-fn input(event: &InputEvent) {
-    match event {
-        InputEvent::KeyboardInput { key } => {
-            println!("oui: {key:?}");
-            if matches!(key, &InputKey::A) {
-                println!("Exiting");
-                // dispatch(&MainEvent::LoopExiting);
-            }
-        }
-    }
-}
-
-fn exit(event: &MainEvent) {
-    match event {
-        MainEvent::Tick => tick(),
-        MainEvent::LoopExiting => process::exit(0),
-    }
-}
-
-fn tick() {
-    // println!("tick");
-}
-
-/*
-
--> EventLoop
-
-    -> HashMap [ TypeId ; Dispatcher ]
-
-        -> Dispatcher
-
-            -> List [ FnOnce / FnMut ]
-
-        # subscribe [ FnOnce / FnMut ]
-        # emit [ CustomEvent ]
-
-    # subscribe [ CustomEvent ; Fnonce / FnMut ]
-    # emit [ CustomEvent ]
-
-    Main
-
-*/

@@ -1,73 +1,44 @@
-use std::{
-    ops::{Deref, DerefMut},
-    time::Instant,
+use std::{cell::RefCell, rc::Rc};
+
+use crate::app::{
+    AppState,
+    main::{EntityManager, MainEvent, handle_main_event},
+    render::handle_render,
 };
 
-use crate::{
-    app::{
-        input::{BasicInputSystem, InputError, InputEvent, InputSystem},
-        main::MainEvent,
-        render::DisplayEvent,
-    },
-    constants,
-};
+use super::{EventLoop, dispatcher::Dispatcher};
 
-use super::{Dispatcher, EventLoop, GenericDispatcher};
-
-pub struct BasicEventLoop {
-    tickrate: u32,
-    dispatcher: GenericDispatcher,
-    input_system: Box<dyn InputSystem>,
+pub struct BasicEventLoop<D: Dispatcher, S: EntityManager> {
+    dispatcher: Rc<RefCell<D>>,
+    state: Rc<RefCell<AppState<S>>>,
 }
 
-impl Default for BasicEventLoop {
-    fn default() -> Self {
+impl<D: Dispatcher, S: EntityManager> BasicEventLoop<D, S> {
+    pub fn new(dispatcher: D, state: AppState<S>) -> Self {
         Self {
-            tickrate: constants::events::DEFAULT_TICKRATE,
-            dispatcher: GenericDispatcher::default(),
-            input_system: Box::new(BasicInputSystem::default()),
+            dispatcher: Rc::new(RefCell::new(dispatcher)),
+            state: Rc::new(RefCell::new(state)),
         }
     }
 }
 
-impl Deref for BasicEventLoop {
-    type Target = GenericDispatcher;
-
-    fn deref(&self) -> &Self::Target {
-        &self.dispatcher
-    }
-}
-
-impl DerefMut for BasicEventLoop {
-    fn deref_mut(&mut self) -> &mut GenericDispatcher {
-        &mut self.dispatcher
-    }
-}
-
-impl EventLoop for BasicEventLoop {
+impl<D: Dispatcher + 'static, S: EntityManager + 'static> EventLoop for BasicEventLoop<D, S> {
     fn run(&mut self) {
-        let mut last_time = Instant::now();
+        {
+            let mut dispatcher = self.dispatcher.borrow_mut();
+
+            dispatcher.subscribe::<MainEvent<D, S>, _>(handle_main_event);
+            dispatcher.subscribe(handle_render);
+        }
 
         loop {
-            match self.input_system.get_input() {
-                Ok(key) => {
-                    self.dispatch(&InputEvent::KeyboardInput { key });
-                }
-                Err(InputError::InvalidInput(invalid_input_str)) => {
-                    eprintln!("[ERROR]: invalid input {:?}", invalid_input_str)
-                }
-                Err(InputError::NoInput) => {}
-            }
+            let dispatcher = Rc::downgrade(&self.dispatcher);
+            let app_state = Rc::downgrade(&self.state);
 
-            self.dispatch(&MainEvent::Tick);
-
-            let crnt_time = Instant::now();
-            let elapsed_time = crnt_time - last_time;
-
-            if elapsed_time.as_secs_f32() >= 1.0 / self.tickrate as f32 {
-                last_time = crnt_time;
-                self.dispatch(&DisplayEvent::RedrawRequested { elapsed_time });
-            }
+            self.dispatcher.borrow_mut().dispatch(&MainEvent::Tick {
+                dispatcher,
+                app_state,
+            });
         }
     }
 }

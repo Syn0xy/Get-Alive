@@ -14,30 +14,25 @@ fn main() {
 
     // BasicEventLoop::new(dispatcher, app).run();
 
-    let mut entity_manager = BasicEntityManager::default();
-
-    entity_manager.create_entity();
-
-    init(&mut entity_manager);
+    init(&mut BasicEntityManager::default());
 }
 
 fn init<T: EntityManager>(entity_manager: &mut T) {
-    let player_id = 0;
+    let player_id = entity_manager.create_entity();
 
     entity_manager.attach_component(player_id, Player::default());
-    for _ in 0..100 {
+    for _ in 0..500 {
         let c_id = entity_manager.create_entity();
         entity_manager.attach_component(c_id, Collider);
     }
 
-    if let Some(player) = entity_manager
-        .borrow_entity_component_mut::<Player>(player_id)
-        .first_mut()
-    {
+    if let Some(player) = entity_manager.borrow_single_entity_component_mut::<Player>(player_id) {
         let controller = &mut player.controller;
 
-        controller.direction.x = 1.0;
-        controller.direction.y = 1.0;
+        controller.direction.x = 1;
+        controller.direction.y = 1;
+
+        controller.direction = IVec2::ZERO;
 
         player.controller = PlayerController::default();
     }
@@ -49,21 +44,21 @@ fn init<T: EntityManager>(entity_manager: &mut T) {
     let mut total = 0_f32;
     let mut i = 0;
 
-    for _ in colliders.iter() {
-        for _ in colliders.iter() {
-            // if i % 10 == 0 {
-            //     println!("{:7}: {:?}", i, last_time.elapsed());
-            // }
+    for &(_id_a, _collider_a) in colliders.iter() {
+        for &(_id_b, _collider_b) in colliders.iter() {
             total += last_time.elapsed().as_nanos() as f32;
             last_time = Instant::now();
             i += 1;
         }
     }
 
-    println!("total: {} secs", start_time.elapsed().as_secs_f32());
-    let avg = total / i as f32;
-    println!("avg: {}", avg);
-    println!("tickrate: {}", 1.0 / avg);
+    let elapsed = start_time.elapsed().as_secs_f32();
+    let average = total / i as f32;
+    let tickrate = 1.0 / elapsed;
+
+    println!("total: {elapsed} secs");
+    println!("avg: {average} nanosecs");
+    println!("tickrate: {tickrate}");
 }
 
 #[derive(Debug, Default)]
@@ -73,14 +68,25 @@ struct Player {
 
 #[derive(Debug, Default)]
 struct PlayerController {
-    direction: Vec2,
+    direction: Vec2<i32>,
 }
 
 #[derive(Debug, Default)]
-struct Vec2 {
-    x: f32,
-    y: f32,
+struct Vec2<T> {
+    x: T,
+    y: T,
 }
+
+type FVec2 = Vec2<f32>;
+type IVec2 = Vec2<i32>;
 
 #[derive(Debug, Default)]
 struct Collider;
+
+impl FVec2 {
+    pub const ZERO: Self = Self { x: 0.0, y: 0.0 };
+}
+
+impl IVec2 {
+    pub const ZERO: Self = Self { x: 0, y: 0 };
+}

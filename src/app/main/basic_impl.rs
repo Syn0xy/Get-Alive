@@ -4,7 +4,7 @@ use std::{
     fmt,
 };
 
-use super::{EntityId, EntityManager};
+use super::{ComponentSystem, EntityComponentSystem, EntityId, EntityManager};
 
 #[derive(Default)]
 pub struct BasicEntityManager {
@@ -45,23 +45,53 @@ impl EntityManager for BasicEntityManager {
             .or_default()
             .push(Box::new(component));
     }
+}
 
-    fn borrow_component<T: Any>(&self) -> Vec<&T> {
+impl ComponentSystem for BasicEntityManager {
+    fn borrow_component<T: Any>(&self) -> Vec<(EntityId, &T)> {
+        let component_type_id = TypeId::of::<T>();
         self.component_entity
-            .values()
-            .flat_map(|vec| vec.iter())
-            .filter_map(|boxed| boxed.downcast_ref::<T>())
+            .iter()
+            .filter_map(|(&(ref entity_id, type_id), components)| {
+                (type_id == component_type_id).then(|| {
+                    components.iter().filter_map(|boxed| {
+                        boxed
+                            .downcast_ref::<T>()
+                            .map(|ref_component| (*entity_id, ref_component))
+                    })
+                })
+            })
+            .flatten()
             .collect()
     }
 
-    fn borrow_component_mut<T: Any>(&mut self) -> Vec<&mut T> {
+    fn borrow_component_mut<T: Any>(&mut self) -> Vec<(EntityId, &mut T)> {
+        let component_type_id = TypeId::of::<T>();
         self.component_entity
-            .values_mut()
-            .flat_map(|vec| vec.iter_mut())
-            .filter_map(|boxed| boxed.downcast_mut::<T>())
+            .iter_mut()
+            .filter_map(|(&(ref entity_id, type_id), components)| {
+                (type_id == component_type_id).then(|| {
+                    components.iter_mut().filter_map(|boxed| {
+                        boxed
+                            .downcast_mut::<T>()
+                            .map(|ref_component| (*entity_id, ref_component))
+                    })
+                })
+            })
+            .flatten()
             .collect()
     }
 
+    fn borrow_single_component<T: Any>(&self) -> Option<&T> {
+        todo!()
+    }
+
+    fn borrow_single_component_mut<T: Any>(&mut self) -> Option<&mut T> {
+        todo!()
+    }
+}
+
+impl EntityComponentSystem for BasicEntityManager {
     fn borrow_entity_component<T: Any>(&self, entity_id: EntityId) -> Vec<&T> {
         let component_type_id = TypeId::of::<T>();
         let key = (entity_id, component_type_id);
@@ -88,6 +118,17 @@ impl EntityManager for BasicEntityManager {
                     .collect()
             })
             .unwrap_or_default()
+    }
+
+    fn borrow_single_entity_component<T: Any>(&self, _entity_id: EntityId) -> Option<&T> {
+        todo!()
+    }
+
+    fn borrow_single_entity_component_mut<T: Any>(
+        &mut self,
+        _entity_id: EntityId,
+    ) -> Option<&mut T> {
+        todo!()
     }
 }
 

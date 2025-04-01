@@ -1,11 +1,15 @@
-use application::{
-    App,
-    input::{BasicInputSystem, InputSystem},
-};
-use winit::{error::EventLoopError, event_loop::EventLoop};
-
 mod application;
 mod constants;
+mod model;
+
+use application::{
+    App,
+    entity::BasicEntityManager,
+    input::{BasicInputSystem, InputSystem},
+    renderer::BasicRendererManager,
+    runtime::BasicRuntimeManager,
+};
+use winit::{error::EventLoopError, event_loop::EventLoop};
 
 fn main() {
     EventLoop::new()
@@ -16,9 +20,21 @@ fn main() {
 
 fn run_application(event_loop: EventLoop<()>) {
     let window_attributes = constants::application::window_attributes();
+    let runtime_manager = BasicRuntimeManager::default();
     let input_system = BasicInputSystem::from_bindings(constants::inputs::INPUT_ACTION_MAPS);
+    let entity_manager = BasicEntityManager::default();
 
-    let mut app = App::new(window_attributes, input_system);
+    let mut app: App<
+        BasicRuntimeManager,
+        BasicInputSystem,
+        BasicEntityManager,
+        BasicRendererManager,
+    > = App::new(
+        window_attributes,
+        runtime_manager,
+        input_system,
+        entity_manager,
+    );
 
     event_loop.set_control_flow(constants::application::CONTROL_FLOW);
     event_loop

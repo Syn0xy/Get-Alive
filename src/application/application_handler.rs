@@ -1,18 +1,28 @@
+use std::sync::Arc;
+
 use winit::{
     application::ApplicationHandler, event::WindowEvent, event_loop::ActiveEventLoop,
-    keyboard::PhysicalKey, window::WindowId,
+    window::WindowId,
 };
 
-use super::{App, input::InputSystem};
+use super::{
+    App, entity::EntityManager, input::InputSystem, renderer::RendererManager,
+    runtime::RuntimeManager,
+};
 
-impl<I: InputSystem> ApplicationHandler for App<I> {
+impl<R: RuntimeManager, I: InputSystem, E: EntityManager, D: RendererManager> ApplicationHandler
+    for App<R, I, E, D>
+{
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if let Ok(window) = event_loop.create_window(self.window_attributes.clone()) {
-            self.window.replace(window);
+            let window_arc = Arc::new(window);
+            self.window.replace(window_arc.clone());
 
-            self.input_system.subscribe("Up", || {
-                println!("oui");
-            });
+            if let Ok(renderer_manager) = D::new(window_arc.clone()) {
+                self.renderer_manager.replace(renderer_manager);
+            }
+
+            self.start();
         }
     }
 
@@ -28,16 +38,12 @@ impl<I: InputSystem> ApplicationHandler for App<I> {
             }
 
             match event {
-                WindowEvent::Resized(..) => {}
+                WindowEvent::Resized(inner_size) => self.handle_resize(inner_size),
                 WindowEvent::CloseRequested => event_loop.exit(),
-                WindowEvent::KeyboardInput { event, .. } => {
-                    if let PhysicalKey::Code(key_code) = event.physical_key {
-                        self.input_system.dispatch(key_code, &event.state);
-                    }
-                }
+                WindowEvent::KeyboardInput { event, .. } => self.handle_key_event(event),
                 WindowEvent::CursorMoved { .. } => {}
                 WindowEvent::MouseInput { .. } => {}
-                WindowEvent::RedrawRequested => self.redraw(),
+                WindowEvent::RedrawRequested => self.handle_redraw(),
                 _ => {}
             }
         }

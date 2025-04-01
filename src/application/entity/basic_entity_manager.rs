@@ -4,8 +4,8 @@ use std::{
 };
 
 use super::{
-    BasicEntityBuilder, ComponentSystem, EntityBuilder, EntityComponentSystem, EntityId,
-    EntityManager,
+    ComponentSystem, EntityBuilder, EntityComponentSystem, EntityId, EntityManager,
+    basic_entity_builder::BasicEntityBuilder,
 };
 
 #[derive(Debug, Default)]

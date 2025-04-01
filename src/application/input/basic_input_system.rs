@@ -28,9 +28,11 @@ impl InputSystem for BasicInputSystem {
         let mut input_system = Self::new();
 
         for action_map in action_maps {
-            for input_action in action_map.actions {
-                for &key_code in input_action.bindings {
-                    input_system.add_binding(input_action.action, key_code);
+            for actions in action_map.1 {
+                let action_name = actions.0;
+
+                for &key_code in actions.1 {
+                    input_system.add_binding(action_name, key_code);
                 }
             }
         }

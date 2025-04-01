@@ -1,5 +1,5 @@
+pub mod application_handler;
 pub mod entity;
-pub mod handler;
 pub mod input;
 
 use std::time::Instant;
@@ -7,20 +7,20 @@ use std::time::Instant;
 use input::InputSystem;
 use winit::window::{Window, WindowAttributes};
 
-pub struct App {
+pub struct App<I: InputSystem> {
     pub window_attributes: WindowAttributes,
     pub window: Option<Window>,
-    pub input_system: InputSystem,
+    pub input_system: I,
     pub tickrate: u32,
     pub last_tick_time: Option<Instant>,
 }
 
-impl App {
-    pub fn new(window_attributes: WindowAttributes) -> Self {
+impl<I: InputSystem> App<I> {
+    pub fn new(window_attributes: WindowAttributes, input_system: I) -> Self {
         Self {
             window_attributes,
             window: Default::default(),
-            input_system: Default::default(),
+            input_system,
             tickrate: Default::default(),
             last_tick_time: Default::default(),
         }

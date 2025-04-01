@@ -1,2 +1,2 @@
 pub mod application;
-pub mod input_actions;
+pub mod inputs;

@@ -3,12 +3,16 @@ use winit::{
     keyboard::PhysicalKey, window::WindowId,
 };
 
-use super::App;
+use super::{App, input::InputSystem};
 
-impl ApplicationHandler for App {
+impl<I: InputSystem> ApplicationHandler for App<I> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if let Ok(window) = event_loop.create_window(self.window_attributes.clone()) {
             self.window.replace(window);
+
+            self.input_system.subscribe("Up", || {
+                println!("oui");
+            });
         }
     }
 
@@ -24,33 +28,15 @@ impl ApplicationHandler for App {
             }
 
             match event {
-                WindowEvent::Resized(_physical_size) => {}
+                WindowEvent::Resized(..) => {}
                 WindowEvent::CloseRequested => event_loop.exit(),
-                WindowEvent::KeyboardInput {
-                    device_id: _,
-                    event,
-                    is_synthetic: _,
-                } => {
+                WindowEvent::KeyboardInput { event, .. } => {
                     if let PhysicalKey::Code(key_code) = event.physical_key {
-                        self.input_system.input_event(&key_code, &event.state);
-                        println!("key: {:?} / State: {:?}", key_code, event.state)
+                        self.input_system.dispatch(key_code, &event.state);
                     }
-
-                    {
-                        
-                    }
-
                 }
-                ,
-                // WindowEvent::CursorMoved {
-                //     device_id,
-                //     position,
-                // } => {}
-                // WindowEvent::MouseInput {
-                //     device_id,
-                //     state,
-                //     button,
-                // } => {}
+                WindowEvent::CursorMoved { .. } => {}
+                WindowEvent::MouseInput { .. } => {}
                 WindowEvent::RedrawRequested => self.redraw(),
                 _ => {}
             }

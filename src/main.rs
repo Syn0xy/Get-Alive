@@ -1,4 +1,7 @@
-use application::App;
+use application::{
+    App,
+    input::{BasicInputSystem, InputSystem},
+};
 use winit::{error::EventLoopError, event_loop::EventLoop};
 
 mod application;
@@ -13,7 +16,9 @@ fn main() {
 
 fn run_application(event_loop: EventLoop<()>) {
     let window_attributes = constants::application::window_attributes();
-    let mut app = App::new(window_attributes);
+    let input_system = BasicInputSystem::from_bindings(constants::inputs::INPUT_ACTION_MAPS);
+
+    let mut app = App::new(window_attributes, input_system);
 
     event_loop.set_control_flow(constants::application::CONTROL_FLOW);
     event_loop

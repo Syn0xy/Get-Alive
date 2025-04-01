@@ -1,21 +1,20 @@
-use std::collections::HashMap;
-
 use winit::{event::ElementState, keyboard::KeyCode};
 
+pub type InputContext = &'static str;
 pub type InputActionName = &'static str;
+pub type Callback = dyn FnMut();
 
-#[derive(Debug, Hash, PartialEq, Eq)]
-pub enum InputContext {
-    Menu,
-    Gameplay,
+pub trait InputSystem {
+    fn new() -> Self;
+    fn from_bindings(action_maps: &[InputActionMap]) -> Self;
+
+    fn subscribe<T>(&mut self, action_name: InputActionName, callback: T)
+    where
+        T: FnMut() + 'static;
+    fn dispatch(&mut self, key_code: KeyCode, state: &ElementState);
+    fn add_binding(&mut self, action_name: InputActionName, key_code: KeyCode);
 }
 
-#[derive(Default, Debug)]
-pub struct InputSystem {
-    pub action_maps: &'static [InputActionMap],
-}
-
-#[derive(Debug)]
 pub struct InputActionMap {
     pub context: InputContext,
     pub actions: &'static [InputAction],
@@ -25,8 +24,4 @@ pub struct InputActionMap {
 pub struct InputAction {
     pub action: InputActionName,
     pub bindings: &'static [KeyCode],
-}
-
-impl InputSystem {
-    pub fn input_event(&self, _key_code: &KeyCode, _state: &ElementState) {}
 }

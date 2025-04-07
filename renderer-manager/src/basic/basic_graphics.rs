@@ -4,8 +4,8 @@ pub struct BasicGraphics<'a> {
     frames: &'a mut [u8],
     width: u32,
     height: u32,
-    color: GraphicsColor,
-    color_buffer: [u8; 4],
+    color: &'a GraphicsColor,
+    color_buffer: &'a [u8; 4],
 }
 
 impl<'a> BasicGraphics<'a> {
@@ -14,8 +14,8 @@ impl<'a> BasicGraphics<'a> {
             frames,
             width,
             height,
-            color: GraphicsColor::WHITE,
-            color_buffer: [0x00, 0x00, 0x00, 0xFF],
+            color: &GraphicsColor::WHITE,
+            color_buffer: GraphicsColor::WHITE.to_buffer(),
         }
     }
 
@@ -25,12 +25,12 @@ impl<'a> BasicGraphics<'a> {
 }
 
 impl<'a> Graphics<'a> for BasicGraphics<'a> {
-    fn set_color(&mut self, color: GraphicsColor) {
+    fn set_color(&mut self, color: &'a GraphicsColor) {
         self.color_buffer = color.to_buffer();
         self.color = color;
     }
 
-    fn set_color_buffer(&mut self, color_buffer: [u8; 4]) {
+    fn set_color_buffer(&mut self, color_buffer: &'a [u8; 4]) {
         self.color_buffer = color_buffer;
     }
 
@@ -41,7 +41,7 @@ impl<'a> Graphics<'a> for BasicGraphics<'a> {
 
         let index = self.get_index(x, y);
         if index + 3 < self.frames.len() {
-            self.frames[index..index + 4].copy_from_slice(&self.color_buffer);
+            self.frames[index..index + 4].copy_from_slice(self.color_buffer);
         }
     }
 

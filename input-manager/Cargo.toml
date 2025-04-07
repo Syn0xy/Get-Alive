@@ -1,0 +1,11 @@
+[package]
+name = "input-manager"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "input"
+path = "src/lib.rs"
+
+[dependencies]
+winit = "0.30.9"

@@ -5,10 +5,7 @@ use winit::{
     window::WindowId,
 };
 
-use super::{
-    App, entity::EntityManager, input::InputSystem, renderer::RendererManager,
-    runtime::RuntimeManager,
-};
+use super::{App, input::InputSystem, renderer::RendererManager, runtime::RuntimeManager};
 
 impl<R: RuntimeManager, I: InputSystem, E: EntityManager, D: RendererManager> ApplicationHandler
     for App<R, I, E, D>

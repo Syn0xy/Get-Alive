@@ -1,0 +1,12 @@
+[package]
+name = "renderer-manager"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "renderer"
+path = "src/lib.rs"
+
+[dependencies]
+pixels = "0.15.0"
+winit = "0.30.9"

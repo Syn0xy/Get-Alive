@@ -1,6 +1,9 @@
 use crate::model::vec2::IVec2;
 
-#[derive(Default)]
+#[derive(Debug)]
+pub struct Player;
+
+#[derive(Default, Debug)]
 pub struct PlayerController {
-    direction: IVec2,
+    pub direction: IVec2,
 }

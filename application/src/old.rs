@@ -1,14 +1,10 @@
-pub mod application_handler;
-pub mod entity;
 pub mod input;
-pub mod renderer;
+pub mod old;
 pub mod runtime;
 
 use std::sync::Arc;
 
-use entity::{EntityBuilder, EntityManager};
 use input::InputSystem;
-use renderer::{DrawCommandBuffer, GraphicsColor, RendererManager};
 use runtime::RuntimeManager;
 use winit::{
     dpi::PhysicalSize,
@@ -17,7 +13,10 @@ use winit::{
     window::{Window, WindowAttributes},
 };
 
-use crate::model::{entity::PlayerController, transform::Transform};
+use crate::model::{
+    entity::{Player, PlayerController},
+    transform::Transform,
+};
 
 pub struct App<R: RuntimeManager, I: InputSystem, E: EntityManager, D: RendererManager> {
     window: Option<Arc<Window>>,
@@ -60,22 +59,21 @@ impl<E: EntityManager, I: InputSystem, R: RuntimeManager, D: RendererManager> Ap
     }
 
     pub fn start(&mut self) {
-        let player_id = self
-            .entity_manager
+        self.entity_manager
             .build_entity()
             .with_component(Transform::default())
-            .with_component(PlayerController::default())
-            .build();
+            .with_component(Player)
+            .with_component(PlayerController::default());
 
-        if let Some(transform) = self
-            .entity_manager
-            .entity_component_mut::<Transform>(player_id)
-        {
-            self.input_system.subscribe("Up", move || {
-                transform.position.y += 1.0;
-                println!("transform: {:?}", transform);
-            });
-        }
+        // self.input_system.subscribe("Up", || {
+        //     if let Some(transform) = self
+        //         .entity_manager
+        //         .entity_component_mut::<Transform>(player_id)
+        //     {
+        //         transform.position.y += 1.0;
+        //         println!("transform: {:?}", transform);
+        //     }
+        // });
     }
 
     pub fn handle_redraw(&mut self) {
@@ -96,6 +94,30 @@ impl<E: EntityManager, I: InputSystem, R: RuntimeManager, D: RendererManager> Ap
         self.draw_command_buffer.push(|graphics| {
             graphics.set_color(GraphicsColor::RED);
             graphics.full_fill();
+        });
+
+        self.paint_player();
+        self.paint_debug();
+    }
+
+    pub fn paint_player(&mut self) {
+        // let (player_id, _) = self.entity_manager.component::<Player>().as_ref().unwrap();
+
+        // if let Some(transform) = self
+        //     .entity_manager
+        //     .entity_component::<Transform>(player_id.clone())
+        // {
+        //     let position = &transform.position;
+
+        //     self.draw_command_buffer.push(move |graphics| {
+        //         graphics.set_color(GraphicsColor::WHITE);
+        //         graphics.pixel(position.x as u32 * 10, position.y as u32 * 10);
+        //     });
+        // }
+    }
+
+    pub fn paint_debug(&mut self) {
+        self.draw_command_buffer.push(|graphics| {
             graphics.set_color(GraphicsColor::GREEN);
             graphics.pixel(10, 10);
             graphics.set_color(GraphicsColor::BLUE);

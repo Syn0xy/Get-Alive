@@ -1,0 +1,13 @@
+[package]
+name = "application"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "application"
+path = "src/lib.rs"
+
+[dependencies]
+entity-manager = { path = "../entity-manager" }
+input-manager = { path = "../input-manager" }
+winit = "0.30.9"

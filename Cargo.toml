@@ -3,7 +3,16 @@ name = "get-alive"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+members = [
+    "application",
+    "entity-manager",
+    "input-manager",
+    "renderer-manager"
+]
+
 [dependencies]
-pixels = "0.15.0"
+application = { path = "./application" }
+entity-manager = { path = "./entity-manager" }
+input-manager = { path = "./input-manager" }
 winit = "0.30.9"
-winit_input_helper = "0.16.0"

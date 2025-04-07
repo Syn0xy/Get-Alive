@@ -1,11 +1,17 @@
+use input::{InputAction, InputActionMap};
 use winit::keyboard::KeyCode;
 
-use crate::application::input::{InputAction, InputActionMap};
+pub enum InputContext {
+    Menu,
+    Gameplay,
+}
+
+use InputContext::*;
 
 pub const INPUT_ACTION_MAPS: &[InputActionMap] = &[
-    InputActionMap("Menu", &[]),
+    InputActionMap(Menu, &[InputAction("Exit", &[KeyCode::Escape])]),
     InputActionMap(
-        "Gameplay",
+        Gameplay,
         &[
             InputAction("Up", &[KeyCode::KeyZ, KeyCode::KeyW]),
             InputAction("Down", &[KeyCode::KeyS]),
